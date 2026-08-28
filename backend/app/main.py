@@ -1,10 +1,11 @@
 import os
+import traceback
 from pathlib import Path
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from app.config import settings, BASE_DIR
 from app.index.store import store
 from app.sample_data.generator import SampleDataLoader
@@ -13,12 +14,16 @@ from app.api.routes_jobs import router as jobs_router
 from app.api.routes_agent import router as agent_router
 from app.api.routes_settings import router as settings_router
 
+def ensure_initial_data():
+    if len(store.list_candidates()) == 0:
+        try:
+            SampleDataLoader.load_all_samples()
+        except Exception as e:
+            print(f"Non-fatal error initializing sample data: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # If store is empty on launch, automatically preload realistic samples
-    if len(store.list_candidates()) == 0:
-        print("Preloading initial sample resumes and jobs...")
-        SampleDataLoader.load_all_samples()
+    ensure_initial_data()
     yield
 
 app = FastAPI(
@@ -28,7 +33,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for Frontend communication
+# Global Exception Handler to avoid opaque 500 errors
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    err_str = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    print(f"Unhandled Exception on {request.url.path}: {err_str}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "path": str(request.url.path), "error_type": type(exc).__name__}
+    )
+
+# Enable CORS for all environments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,6 +51,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware / Hook to ensure data on serverless cold starts
+@app.middleware("http")
+async def ensure_data_middleware(request: Request, call_next):
+    if len(store.list_candidates()) == 0 and not request.url.path.startswith("/assets"):
+        ensure_initial_data()
+    response = await call_next(request)
+    return response
 
 # Mount API Routers
 app.include_router(resumes_router)
@@ -50,6 +73,7 @@ async def preload_samples():
 
 @app.get("/api/health")
 async def health_check():
+    ensure_initial_data()
     return {
         "status": "healthy",
         "app_name": settings.app_name,
@@ -59,7 +83,7 @@ async def health_check():
         "job_count": len(store.list_jobs())
     }
 
-# Check for production frontend build (e.g. on Render)
+# Check for production frontend build (e.g. on Render or unified containers)
 frontend_dist = BASE_DIR.parent / "frontend" / "dist"
 if not frontend_dist.exists():
     frontend_dist = Path("/app/frontend/dist")
