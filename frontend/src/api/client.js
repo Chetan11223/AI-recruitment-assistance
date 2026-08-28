@@ -1,7 +1,16 @@
 import axios from 'axios';
 
+// Supports both unified hosting (/api) and separate frontend/backend deployments (VITE_API_URL)
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) {
+    const raw = import.meta.env.VITE_API_URL.trim().replace(/\/$/, '');
+    return raw.endsWith('/api') ? raw : `${raw}/api`;
+  }
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
