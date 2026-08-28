@@ -1,0 +1,25 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Temporary data and uploads
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+backend/data/indexes/*
+!backend/data/indexes/.gitkeep
+backend/data/jobs/*
+!backend/data/jobs/.gitkeep
+
+# Environment variables & keys
+.env
+.env.local
+*.log
