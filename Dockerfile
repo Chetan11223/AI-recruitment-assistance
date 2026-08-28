@@ -17,15 +17,21 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install system dependencies required for native PDF extraction
+# Install system dependencies required for native PDF extraction & healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python backend dependencies
+# Create and use isolated virtual environment (best practice, eliminates root pip warnings)
+ENV VIRTUAL_ENV=/opt/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install Python backend dependencies in virtual environment
 COPY backend/requirements.txt ./backend/
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r backend/requirements.txt
 
 # Copy application source code
 COPY backend/ ./backend/
