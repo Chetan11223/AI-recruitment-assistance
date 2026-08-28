@@ -4,8 +4,9 @@ services:
     name: ai-recruitment-backend
     runtime: python
     plan: free
-    buildCommand: "pip install -r backend/requirements.txt"
-    startCommand: "python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT"
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
@@ -24,8 +25,9 @@ services:
   - type: static_site
     name: ai-recruitment-frontend
     plan: free
-    buildCommand: "cd frontend && npm install && npm run build"
-    staticPublishPath: "frontend/dist"
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: "dist"
     routes:
       - type: rewrite
         source: "/*"
