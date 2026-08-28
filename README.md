@@ -49,31 +49,52 @@ Visit: **`http://localhost:5173`**
 
 ---
 
+## 🚀 Deploying to Vercel
+
+This project is ready for 1-click deployment on [Vercel](https://vercel.com) supporting both the React frontend and the Python Serverless API.
+
+### Deploy Steps:
+1. Push your repository to GitHub.
+2. In your [Vercel Dashboard](https://vercel.com/new), click **Import Project** and select `Chetan11223/AI-recruitment-assistance`.
+3. Vercel will automatically detect `vercel.json`:
+   - **Framework Preset**: Vite / Other
+   - **Build Command**: `cd frontend && npm install --legacy-peer-deps && npm run build`
+   - **Output Directory**: `frontend/dist`
+   - **Serverless API**: `api/index.py` handles all `/api/*` routes.
+4. Click **Deploy**.
+
+---
+
+## 🐳 Deploying with Docker
+
+You can build and run the entire full-stack application as a single Docker container anywhere (Render, AWS, GCP, Fly.io, Railway, DigitalOcean):
+
+```bash
+# 1. Build Docker Image
+docker build -t resume-intelligence:latest .
+
+# 2. Run Container
+docker run -p 8000:8000 -e LLM_PROVIDER=mock resume-intelligence:latest
+```
+
+Visit: `http://localhost:8000`
+
+---
+
 ## 🚀 Deploying to Render
 
-This project is configured for seamless 1-click deployment on [Render](https://render.com).
+This project is configured for seamless deployment on [Render](https://render.com).
 
 ### Method 1: Render Blueprint (Recommended)
 1. In your Render Dashboard, click **New +** $\rightarrow$ **Blueprint**.
 2. Connect your GitHub repository `https://github.com/Chetan11223/AI-recruitment-assistance`.
-3. Render will automatically detect `render.yaml` and configure:
-   - **Runtime**: Python 3.11 + Node.js 20
-   - **Build Command**: `./render-build.sh` (or `pip install -r backend/requirements.txt && cd frontend && npm install && npm run build && cd ..`)
-   - **Start Command**: `python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT`
-4. Click **Apply**. Your full-stack app will be live with free SSL in minutes!
+3. Render will automatically detect `render.yaml` and configure both the backend web service and the frontend static site.
+4. Click **Apply**.
 
-### Method 2: Manual Web Service on Render
+### Method 2: Docker Web Service on Render
 1. Click **New +** $\rightarrow$ **Web Service**.
 2. Select your repository.
-3. Configure:
-   - **Runtime**: `Python 3`
-   - **Build Command**: `./render-build.sh`
-   - **Start Command**: `python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT`
-   - **Environment Variables (Optional)**:
-     - `PYTHON_VERSION`: `3.11.9`
-     - `NODE_VERSION`: `20.11.0`
-     - `LLM_PROVIDER`: `mock` (or `gemini`, `openai`, `anthropic`, `groq`)
-     - `GEMINI_API_KEY`, `OPENAI_API_KEY`, etc. (if using live external LLMs)
+3. Choose **Docker** as the environment (it will use the multi-stage `Dockerfile`).
 4. Click **Create Web Service**.
 
 ---
