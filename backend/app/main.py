@@ -67,11 +67,13 @@ app.include_router(agent_router)
 app.include_router(settings_router)
 
 @app.post("/api/preload-samples")
+@app.post("/preload-samples")
 async def preload_samples():
     result = SampleDataLoader.load_all_samples()
     return result
 
 @app.get("/api/health")
+@app.get("/health")
 async def health_check():
     ensure_initial_data()
     return {
