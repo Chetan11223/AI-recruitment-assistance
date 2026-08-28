@@ -49,6 +49,35 @@ Visit: **`http://localhost:5173`**
 
 ---
 
+## 🚀 Deploying to Render
+
+This project is configured for seamless 1-click deployment on [Render](https://render.com).
+
+### Method 1: Render Blueprint (Recommended)
+1. In your Render Dashboard, click **New +** $\rightarrow$ **Blueprint**.
+2. Connect your GitHub repository `https://github.com/Chetan11223/AI-recruitment-assistance`.
+3. Render will automatically detect `render.yaml` and configure:
+   - **Runtime**: Python 3.11 + Node.js 20
+   - **Build Command**: `./render-build.sh` (or `pip install -r backend/requirements.txt && cd frontend && npm install && npm run build && cd ..`)
+   - **Start Command**: `python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT`
+4. Click **Apply**. Your full-stack app will be live with free SSL in minutes!
+
+### Method 2: Manual Web Service on Render
+1. Click **New +** $\rightarrow$ **Web Service**.
+2. Select your repository.
+3. Configure:
+   - **Runtime**: `Python 3`
+   - **Build Command**: `./render-build.sh`
+   - **Start Command**: `python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT`
+   - **Environment Variables (Optional)**:
+     - `PYTHON_VERSION`: `3.11.9`
+     - `NODE_VERSION`: `20.11.0`
+     - `LLM_PROVIDER`: `mock` (or `gemini`, `openai`, `anthropic`, `groq`)
+     - `GEMINI_API_KEY`, `OPENAI_API_KEY`, etc. (if using live external LLMs)
+4. Click **Create Web Service**.
+
+---
+
 ## Architecture
 
 ```
